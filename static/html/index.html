@@ -26,6 +26,17 @@
       // This example displays a marker at the center of Australia.
       // When the user clicks the marker, an info window opens.
 
+      function getData() {
+          return $.ajax({
+              type: "GET",
+              url: "/tweets",
+              success: function(result) {
+                  console.log(result);
+              }
+          })
+      }
+
+
       function initMap() {
 
 
