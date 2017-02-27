@@ -23,6 +23,40 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script>
 
+        var geoTweets = [];
+        //this class may not be needed as making objects in GeoTweet might do.
+        /*
+        class LatLng {
+            constructor(data) {
+                this.lat = data["lat"];
+                //note long converted to lng to fit google api
+                this.lng = data["long"];
+            }
+        }
+        */
+
+     class GeoTweet {
+         /*
+            This class should these values:
+                1. location an object of class LatLong
+                2. content a dictionary
+            This class should have 1 getter:
+                1. formattedContent which returns a formatted html string
+
+          */
+         constructor(data) {
+             this.text = data.text;
+             this.coordinates = {"lat": Number(data.coordinates["lat"]), "lng": Number(data.coordinates["long"])};
+         }
+
+         get formattedContent() {
+             var fc = "<div><p>"+this.text+"</p></div>";
+             return fc;
+         }
+
+     }
+
+
       // This example displays a marker at the center of Australia.
       // When the user clicks the marker, an info window opens.
 
@@ -31,23 +65,32 @@
               type: "GET",
               url: "/tweets",
               success: function(result) {
-                  console.log(result);
-                  initMap();
+                  initMap(result);
               }
           })
       }
 
 
-      function initMap() {
+      function initMap(tweetData) {
 
 
+        //todo: change map location on load
         var uluru = {lat: -25.363, lng: 131.044};
         var map = new google.maps.Map(document.getElementById('map'), {
           zoom: 4,
           center: uluru
         });
 
-        var contentString = '<div id="content">'+
+
+         geoTweets = tweetData.map(function(tweetData) {
+            return new GeoTweet(tweetData)
+        });
+
+        geoTweets.forEach(function(geoTweet) {
+            var infowindow = new google.maps.InfoWindow({
+
+            /*    todo: make the content prettier by following this.
+                var contentString = '<div id="content">'+
             '<div id="siteNotice">'+
             '</div>'+
             '<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
@@ -67,19 +110,27 @@
             '(last visited June 22, 2009).</p>'+
             '</div>'+
             '</div>';
+            */
+              content: geoTweet.formattedContent
+            });
 
-        var infowindow = new google.maps.InfoWindow({
-          content: contentString
+            var marker = new google.maps.Marker({
+              position: geoTweet.coordinates,
+              map: map,
+              //todo: make better titles
+              title: geoTweet.text.slice(1,5)
+            });
+            marker.addListener('click', function() {
+              infowindow.open(map, marker);
+            });
         });
 
-        var marker = new google.maps.Marker({
-          position: uluru,
-          map: map,
-          title: 'Uluru (Ayers Rock)'
-        });
-        marker.addListener('click', function() {
-          infowindow.open(map, marker);
-        });
+
+
+
+
+
+
       }
     </script>
     <script async defer
