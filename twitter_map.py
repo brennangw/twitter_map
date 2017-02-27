@@ -24,7 +24,42 @@ def hello_world():
 @app.route('/tweets')
 def getTweets():
     res = elasticsearch.search(index="tweets", body={"query": {"match_all": {}}})
-    return jsonify(res['hits']['hits']['_source'])
+    def getSource(result): return result['_source']
+    resSources = list(map(getSource, res['hits']['hits']))
+    simplifiedTweets = []
+    for tweet in resSources:
+        try:
+            #are the bounding_boxes always squares? find out may need to make this more robust
+            coordinates = tweet['quoted_status']['place']['bounding_box']['coordinates'][0]
+            print(coordinates)
+            averageCoordinates = {
+                'lat' : 0.,
+                'long' : 0.,
+            }
+
+            for coordinate in coordinates:
+                print(coordinate)
+                averageCoordinates['lat'] += float(coordinate[0])
+                averageCoordinates['long'] += float(coordinate[1])
+
+            averageCoordinates['lat'] /= float(len(coordinates))
+            averageCoordinates['lat'] /= float(len(coordinates))
+
+            print("got averages")
+
+            simplifiedTweet = {
+                'coordinates': averageCoordinates,
+                'text': tweet['quoted_status']['text']
+            }
+
+            simplifiedTweets.append(simplifiedTweet)
+
+
+        except Exception:
+            print("failed to simplify tweet")
+            pass
+    print(simplifiedTweets)
+    return jsonify(simplifiedTweets)
 
 
 
