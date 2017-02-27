@@ -4,6 +4,15 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <title>Info windows</title>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <style>
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -16,34 +25,76 @@
         margin: 0;
         padding: 0;
       }
+
+      .navbar {
+          margin-bottom: 0px;
+      }
+
     </style>
   </head>
   <body>
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Sport Tweets</a>
+        </div>
+
+            <ul class="nav navbar-nav navbar-right">
+                <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#filtersModal">
+                  Filters
+                </button>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+    <div class="modal fade" id="filtersModal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Filters</h4>
+            </div>
+            <div class="modal-body">
+                <form id="filterForm">
+                    <div>
+                     <input type="checkbox" name="soccer" value="soccer" id="soccerCheck" checked>
+                     <label for="ch1">soccer</label>
+                    </div>
+                    <div>
+                     <input type="checkbox" name="football" value="football" id="basketBallCheck" checked>
+                     <label for="ch1">football</label>
+                    </div>
+                    <div>
+                     <input type="checkbox" name="basketball" value="basketball" id="footballCheck" checked>
+                     <label for="ch1">basketball</label>
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+            </div>
+            <div class="modal-footer">"
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
     <div id="map"></div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+
+
     <script>
 
-        var geoTweets = [];
-        //this class may not be needed as making objects in GeoTweet might do.
-        /*
-        class LatLng {
-            constructor(data) {
-                this.lat = data["lat"];
-                //note long converted to lng to fit google api
-                this.lng = data["long"];
-            }
-        }
-        */
-
+     var geoTweets = [];
+     var markers = [];
+     var filters = ["soccer", "football", "basketball"];
+     var map = null;
      class GeoTweet {
-         /*
-            This class should these values:
-                1. location an object of class LatLong
-                2. content a dictionary
-            This class should have 1 getter:
-                1. formattedContent which returns a formatted html string
-
-          */
          constructor(data) {
              this.text = data.text;
              this.coordinates = {"lat": Number(data.coordinates["lat"]), "lng": Number(data.coordinates["long"])};
@@ -57,60 +108,22 @@
      }
 
 
-      // This example displays a marker at the center of Australia.
-      // When the user clicks the marker, an info window opens.
 
-      function init() {
-          return $.ajax({
-              type: "GET",
-              url: "/tweets",
-              success: function(result) {
-                  initMap(result);
-              }
-          })
-      }
+     function tweetsDisplay() {
+            for (var i = 0; i < markers.length; i++) {
+                markers[i].setMap(null);
+            }
 
-
-      function initMap(tweetData) {
-
-
-        //todo: change map location on load
-        var uluru = {lat: 0., lng: 0.};
-        var map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 2,
-          center: uluru
-        });
-
-
-         geoTweets = tweetData.map(function(tweetData) {
-            return new GeoTweet(tweetData)
-        });
-
-        geoTweets.forEach(function(geoTweet) {
+         geoTweets.filter(function (geoTweet) {
+             for (let filter of filters) {
+                 if (geoTweet.text.toLowerCase().indexOf(filter) > 0) {
+                     return true;
+                 }
+            }
+            return false;
+         }).forEach(function(geoTweet) {
             var infowindow = new google.maps.InfoWindow({
-
-            /*    todo: make the content prettier by following this.
-                var contentString = '<div id="content">'+
-            '<div id="siteNotice">'+
-            '</div>'+
-            '<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
-            '<div id="bodyContent">'+
-            '<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
-            'sandstone rock formation in the southern part of the '+
-            'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
-            'south west of the nearest large town, Alice Springs; 450&#160;km '+
-            '(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
-            'features of the Uluru - Kata Tjuta National Park. Uluru is '+
-            'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
-            'Aboriginal people of the area. It has many springs, waterholes, '+
-            'rock caves and ancient paintings. Uluru is listed as a World '+
-            'Heritage Site.</p>'+
-            '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
-            'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
-            '(last visited June 22, 2009).</p>'+
-            '</div>'+
-            '</div>';
-            */
+            ///todo: make the content prettier by following the online example.
               content: geoTweet.formattedContent
             });
 
@@ -123,19 +136,58 @@
             marker.addListener('click', function() {
               infowindow.open(map, marker);
             });
+            markers.push(marker);
         });
+     }
+
+     function initGoogleMapDisplay() {
+         map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 2,
+          center: {lat: 0., lng: 0.}
+        });
+     }
 
 
+      // This example displays a marker at the center of Australia.
+      // When the user clicks the marker, an info window opens.
 
-
-
-
-
+      function init() {
+          return $.ajax({
+              type: "GET",
+              url: "/tweets",
+              success: function(tweetData) {
+                  geoTweets = tweetData.map(function(tweetData) {
+                    return new GeoTweet(tweetData)
+                  });
+                  initGoogleMapDisplay();
+                  tweetsDisplay();
+              }
+          })
       }
+
+      $(document).ready(function() {
+          $('#filterForm').submit(function (e) {
+            e.preventDefault();
+            var mydata = JSON.stringify($('#filterForm').serialize());
+            filters = $('#filterForm').serializeArray().reduce(
+            function(accumulater, curr) {
+                accumulater.push(curr.value);
+                return accumulater;
+            }, []);
+            console.log(filters);
+             tweetsDisplay();
+          });
+          init();
+      });
+
     </script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAVUKgc7zGhALvM8CEDOyxjhaajwqq9uc&callback=init">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAVUKgc7zGhALvM8CEDOyxjhaajwqq9uc">
     </script>
 
+
+
   </body>
+
+
 </html>
