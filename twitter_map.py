@@ -54,13 +54,24 @@ def getTweets():
             simplifiedTweets.append(simplifiedTweet)
 
 
-        except Exception:
+        except (LookupError, AttributeError, TypeError) as e:
             try:
+                print("trying geo")
+                coordinates = tweet["geo"]["coordinates"]
+                print(coordinates)
+                simplifiedTweet = {
+                    'coordinates': {'lat':  float(coordinates[0]),
+                                    'long': float(coordinates[1])},
+                    'text': tweet['text']
+                }
+                print("after creating tweet")
+                simplifiedTweets.append(simplifiedTweet)
+            except (LookupError, AttributeError, TypeError) as e:
+                print(tweet)
+                print(e)
+                pass
 
-            except Exception:
 
-            print("failed to simplify tweet")
-            pass
     print("returning " + str(len(simplifiedTweets)) + " tweets.")
     return jsonify(simplifiedTweets)
 
