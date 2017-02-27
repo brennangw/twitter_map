@@ -24,7 +24,7 @@ def hello_world():
 @app.route('/tweets')
 def getTweets():
     res = elasticsearch.search(index="tweets", body={"query": {"match_all": {}}})
-    return jsonify(res['hits']['hits'])
+    return jsonify(res['hits']['hits']['_source'])
 
 
 
