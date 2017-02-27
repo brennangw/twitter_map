@@ -23,9 +23,10 @@ def hello_world():
 
 @app.route('/tweets')
 def getTweets():
-    res = elasticsearch.search(index="tweets", body={"query": {"match_all": {}}})
+    res = elasticsearch.search(index="tweets", size=1000, body={"query": {"match_all": {}}})
     def getSource(result): return result['_source']
     resSources = list(map(getSource, res['hits']['hits']))
+    print(jsonify(resSources))
     simplifiedTweets = []
     for tweet in resSources:
         try:
@@ -54,12 +55,22 @@ def getTweets():
 
 
         except Exception:
+            try:
+
+            except Exception:
+
             print("failed to simplify tweet")
             pass
-
+    print("returning " + str(len(simplifiedTweets)) + " tweets.")
     return jsonify(simplifiedTweets)
 
-
+@app.route('/unformattedTweets')
+def getAllTweetsUnformatted():
+    res = elasticsearch.search(index="tweets", size=20, body={"query": {"match_all": {}}})
+    def getSource(result): return result['_source']
+    resSources = list(map(getSource, res['hits']['hits']))
+    print("returning " + str(len(resSources)) + " tweets.")
+    return(jsonify(resSources))
 
 if __name__ == '__main__':
     app.run()
