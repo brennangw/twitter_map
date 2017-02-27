@@ -26,12 +26,13 @@
       // This example displays a marker at the center of Australia.
       // When the user clicks the marker, an info window opens.
 
-      function getData() {
+      function init() {
           return $.ajax({
               type: "GET",
               url: "/tweets",
               success: function(result) {
                   console.log(result);
+                  initMap();
               }
           })
       }
@@ -82,7 +83,7 @@
       }
     </script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAVUKgc7zGhALvM8CEDOyxjhaajwqq9uc&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAVUKgc7zGhALvM8CEDOyxjhaajwqq9uc&callback=init">
     </script>
 
   </body>
