@@ -6,8 +6,8 @@ import certifi
 import secretsAndSettings as sas
 
 #Sign into Twitter
-auth = tweepy.OAuthHandler(sas.twitterKeys.consumer_key, sas.twitterKeys.consumer_secret)
-auth.set_access_token(sas.twitterKeys.access_token, sas.twitterKeys.access_token_secret)
+auth = tweepy.OAuthHandler(sas.twitterKeys['consumer_key'], sas.twitterKeys['consumer_secret'])
+auth.set_access_token(sas.twitterKeys['access_token'], sas.twitterKeys['access_token_secret'])
 api = tweepy.API(auth)
 
 #Sign into Elasticsearch
