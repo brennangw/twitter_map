@@ -22,14 +22,14 @@ def lowerCase(word): return str(word).lower()
 
 wordsToTrack.extend(map(lowerCase, wordsToTrack))
 
-print wordsToTrack
+print (wordsToTrack)
 
 #Set up StreamListener for feeding twitter feeds to elastic search
 class ElasticSearchFeederStreamListener(tweepy.StreamListener):
     def on_data(self, tweet_data):
         decoded = json.loads(tweet_data)
         if 'coordinates' in decoded and decoded['coordinates'] is not None:
-            print elasticsearch.index(index="tweets", doc_type="tweet", body=tweet_data)
+            print (elasticsearch.index(index="tweets", doc_type="tweet", body=tweet_data))
 
 elasticSearchFeederStreamListenerInstance = ElasticSearchFeederStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=elasticSearchFeederStreamListenerInstance)
