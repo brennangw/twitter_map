@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <title>Info windows</title>
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-      <!-- Latest compiled and minified CSS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <!-- Optional theme -->
@@ -14,42 +14,42 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-      #map {
-        height: 100%;
-      }
-      /* Optional: Makes the sample page fill the window. */
-      html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 90%;
+        }
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
 
-      .navbar {
-          margin-bottom: 0px;
-      }
+        .navbar {
+            margin-bottom: 0px;
+        }
 
     </style>
-  </head>
-  <body>
-  <nav class="navbar navbar-default">
+</head>
+<body>
+<nav class="navbar navbar-default">
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
             <a class="navbar-brand" href="#">Sport Tweets</a>
         </div>
 
-            <ul class="nav navbar-nav navbar-right">
-                <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#filtersModal">
-                  Filters
-                </button>
-            </ul>
-        </div><!-- /.navbar-collapse -->
+        <ul class="nav navbar-nav navbar-right">
+            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#filtersModal">
+                Filters
+            </button>
+        </ul>
+    </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
 
-    <div class="modal fade" id="filtersModal" role="dialog">
+<div class="modal fade" id="filtersModal" role="dialog">
     <div class="modal-dialog">
 
         <!-- Modal content-->
@@ -58,36 +58,43 @@
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Filters</h4>
             </div>
-        <div class="form-group">
-          <label for="select" class="col-sm-2 control-label" id="distance_label">Distance (km)</label>
-          <div class="col-sm-10" id="drop-down_select">
-            <select class="form-control" id="selected_distance">
-              <option selected="selected">10</option>
-              <option>50</option>
-              <option>100</option>
-              <option>200</option>
-              <option>500</option>
-              <option>1000</option>
-              <option>5000</option>
-            </select>
-          </div>
-        </div>
 
-        <div class="modal-body">
+            <div class="modal-body">
                 <form id="filterForm">
-                    <div>
-                     <input type="checkbox" name="soccer" value="soccer" id="soccerCheck" checked>
-                     <label for="ch1">soccer</label>
-                    </div>
-                    <div>
-                     <input type="checkbox" name="football" value="football" id="basketBallCheck" checked>
-                     <label for="ch1">football</label>
-                    </div>
-                    <div>
-                     <input type="checkbox" name="basketball" value="basketball" id="footballCheck" checked>
-                     <label for="ch1">basketball</label>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label for="ch1">Distances</label>
+                            <div class="radio">
+                                <label><input type="radio" name="optradio" value="1">1</label>
+                            </div>
+                            <div class="radio">
+                                <label><input type="radio" name="optradio" value="10" checked>10</label>
+                            </div>
+                            <div class="radio">
+                                <label><input type="radio" name="optradio" value="100">100</label>
+                            </div>
+                            <div class="radio">
+                                <label><input type="radio" name="optradio" value="1000">1000</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="ch1">Filters</label>
+                            <div>
+                                <input type="checkbox" name="soccer" value="soccer" id="soccerCheck" checked>
+                                <label for="ch1">soccer</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" name="football" value="football" id="basketBallCheck" checked>
+                                <label for="ch1">football</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" name="basketball" value="basketball" id="footballCheck" checked>
+                                <label for="ch1">basketball</label>
+                            </div>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-default">Submit</button>
+
                 </form>
             </div>
             <div class="modal-footer">"
@@ -98,111 +105,124 @@
     </div>
 </div>
 
+<div id="map"></div>
 
-    <div id="map"></div>
+<script>
 
+    var geoTweets = [];
+    var markers = [];
+    var filters = ["soccer", "football", "basketball"];
+    var distance = 10;
+    var map = null;
+    class GeoTweet {
+        constructor(data) {
+            this.text = data.text;
+            this.coordinates = {"lat": Number(data.coordinates["lat"]), "lng": Number(data.coordinates["long"])};
+        }
 
+        get formattedContent() {
+            var fc = "<div><p>"+this.text+"</p></div>";
+            return fc;
+        }
 
-    <script>
+    }
 
-     var geoTweets = [];
-     var markers = [];
-     var filters = ["soccer", "football", "basketball"];
-     var map = null;
-     class GeoTweet {
-         constructor(data) {
-             this.text = data.text;
-             this.coordinates = {"lat": Number(data.coordinates["lat"]), "lng": Number(data.coordinates["long"])};
-         }
+    function tweetsDisplay() {
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
 
-         get formattedContent() {
-             var fc = "<div><p>"+this.text+"</p></div>";
-             return fc;
-         }
-
-     }
-
-
-
-     function tweetsDisplay() {
-            for (var i = 0; i < markers.length; i++) {
-                markers[i].setMap(null);
-            }
-
-         geoTweets.filter(function (geoTweet) {
-             for (let filter of filters) {
-                 if (geoTweet.text.toLowerCase().indexOf(filter) > 0) {
-                     return true;
-                 }
+        geoTweets.filter(function (geoTweet) {
+            for (let filter of filters) {
+                if (geoTweet.text.toLowerCase().indexOf(filter) > 0) {
+                    return true;
+                }
             }
             return false;
-         }).forEach(function(geoTweet) {
+        }).forEach(function(geoTweet) {
             var infowindow = new google.maps.InfoWindow({
-            ///todo: make the content prettier by following the online example.
-              content: geoTweet.formattedContent
+                ///todo: make the content prettier by following the online example.
+                content: geoTweet.formattedContent
             });
 
             var marker = new google.maps.Marker({
-              position: geoTweet.coordinates,
-              map: map,
-              //todo: make better titles
-              title: geoTweet.text.slice(1,5)
+                position: geoTweet.coordinates,
+                map: map,
+                //todo: make better titles
+                title: geoTweet.text.slice(1,5)
             });
             marker.addListener('click', function() {
-              infowindow.open(map, marker);
+                infowindow.open(map, marker);
             });
             markers.push(marker);
         });
-     }
+    }
 
-     function initGoogleMapDisplay() {
-         map = new google.maps.Map(document.getElementById('map'), {
-          zoom: 2,
-          center: {lat: 0., lng: 0.}
+    function initGoogleMapDisplay() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 2,
+            center: {lat: 0., lng: 0.}
         });
-     }
+        google.maps.event.addListener(map, 'rightclick', function(event) {
+            return $.ajax({
+                type: "POST",
+                url: "/geoSearch",
+                data: {
+                    "lat" : event.latLng.lat(),
+                    "long" : event.latLng.lng(),
+                    "distance" : distance
+                },
+                success: function(tweetData) {
+                    console.log(tweetData);
+                }
+            });
+        });
+    }
 
 
-      // This example displays a marker at the center of Australia.
-      // When the user clicks the marker, an info window opens.
+    // This example displays a marker at the center of Australia.
+    // When the user clicks the marker, an info window opens.
 
-      function init() {
-          return $.ajax({
-              type: "GET",
-              url: "/tweets",
-              success: function(tweetData) {
-                  geoTweets = tweetData.map(function(tweetData) {
+    function init() {
+        return $.ajax({
+            type: "GET",
+            url: "/tweets",
+            success: function(tweetData) {
+                geoTweets = tweetData.map(function(tweetData) {
                     return new GeoTweet(tweetData)
-                  });
-                  initGoogleMapDisplay();
-                  tweetsDisplay();
-              }
-          })
-      }
+                });
+                initGoogleMapDisplay();
+                tweetsDisplay();
+            }
+        })
+    }
 
-      $(document).ready(function() {
-          $('#filterForm').submit(function (e) {
+    $(document).ready(function() {
+        $('#filterForm').submit(function (e) {
             e.preventDefault();
-            var mydata = JSON.stringify($('#filterForm').serialize());
+            //var formData =$('#filterForm').serialize();
+            //distance = parseInt(formData[0].value);
             filters = $('#filterForm').serializeArray().reduce(
-            function(accumulater, curr) {
-                accumulater.push(curr.value);
-                return accumulater;
-            }, []);
+                function(accumulater, curr) {
+                    accumulater.push(curr.value);
+                    return accumulater;
+                }, []);
+            distance = filters.shift();
+            console.log(distance);
             console.log(filters);
-             tweetsDisplay();
-          });
-          init();
-      });
+            tweetsDisplay();
+        });
+        init();
+    });
 
-    </script>
-    <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAVUKgc7zGhALvM8CEDOyxjhaajwqq9uc">
-    </script>
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAVUKgc7zGhALvM8CEDOyxjhaajwqq9uc">
+</script>
 
 
 
-  </body>
+</body>
 
 
 </html>

@@ -1,4 +1,4 @@
-from flask import send_file, jsonify
+from flask import send_file, jsonify, request
 from flask import Flask
 import certifi
 from elasticsearch import Elasticsearch
@@ -13,8 +13,6 @@ elasticsearch = Elasticsearch(sas.elasticSearch['uri'],
 
 
 application = Flask(__name__)
-
-
 
 @application.route('/')
 def hello_world():
@@ -74,6 +72,40 @@ def getTweets():
 
     print("returning " + str(len(simplifiedTweets)) + " tweets.")
     return jsonify(simplifiedTweets)
+
+@application.route('/geoSearch', methods=['POST'])
+def searchTweetsByGeoLocation():
+
+    lat = request.form["lat"]
+    long = request.form["long"]
+    distance = request.form["distance"]
+    print lat
+    print long
+    print distance
+    tweets = []
+    esBody = {
+        "query": {
+            "filtered": {
+                "query": {
+                    "match_all": {}
+                },
+                "filter": {
+                    "geo_distance": {
+                        "distance": distance + "km",
+                        "Addresses.GeoLocation": {
+                            "lat": lat,
+                            "lon": long
+                        }
+                    }
+                }
+            }
+        },
+        "size": 50
+    }
+    print esBody
+    # res = elasticsearch.search(index="tweets", size=1000, body=esBody)
+    # print res
+    return jsonify(tweets)
 
 @application.route('/unformattedTweets')
 def getAllTweetsUnformatted():
