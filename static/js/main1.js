@@ -1,7 +1,7 @@
 var geoTweets = [];
 var markers = [];
 var filters = ["soccer", "football", "basketball"];
-var distance = 10;
+var distance = 5000;
 var map = null;
 class GeoTweet {
     constructor(data) {
@@ -16,6 +16,9 @@ class GeoTweet {
     }
 
 }
+
+
+
 
 function tweetsDisplay(useFilters) {
 
@@ -52,7 +55,7 @@ function tweetsDisplay(useFilters) {
     });
 }
 
-function initGoogleMapDisplay(useFilters) {
+function initGoogleMapDisplay() {
     map = new google.maps.Map(document.getElementById('map'), {
         zoom: 2,
         center: {lat: 0., lng: 0.}
@@ -67,21 +70,16 @@ function initGoogleMapDisplay(useFilters) {
                 "distance" : distance
             },
             success: function(tweetData) {
-                console.log(tweetData);
                  geoTweets = tweetData.map(function(tweetData) {
                     return new GeoTweet(tweetData)
                 });
-                tweetsDisplay(useFilters);
+                tweetsDisplay(false);
             }
         });
     });
 }
 
-
-// This example displays a marker at the center of Australia.
-// When the user clicks the marker, an info window opens.
-
-function getTweets() {
+function getTweets(useFilters) {
     return $.ajax({
         type: "GET",
         url: "/tweets",
@@ -89,8 +87,7 @@ function getTweets() {
             geoTweets = tweetData.map(function(tweetData) {
                 return new GeoTweet(tweetData)
             });
-            initGoogleMapDisplay();
-            tweetsDisplay(true);
+            tweetsDisplay(useFilters);
         }
     })
 }
@@ -106,16 +103,23 @@ function getFilters(serializedArray) {
 }
 
 $(document).ready(function() {
-    $('#filterForm').submit(function (e) {
-        getTweets();
+    $('#showAll').click(function (e) {
         e.preventDefault();
+        console.log("show all");
+        getFilters($('#filterForm').serializeArray());
+        getTweets(false);
+    });
+    $('#filterForm').submit(function (e) {
+        e.preventDefault();
+        getFilters($('#filterForm').serializeArray());
+        getTweets(true);
+    });
+    $('#showFilteredButton').click(function (e) {
         getFilters($('#filterForm').serializeArray());
         tweetsDisplay(true);
     });
-    $('#showFilteredButton').click(function (e) {
-       getTweets();
-       getFilters($('#filterForm').serializeArray());
-       tweetsDisplay(true);
-    });
-    getTweets();
+    initGoogleMapDisplay();
+    getFilters($('#filterForm').serializeArray());
+    getTweets(true);
+    console.log("done with init");
 });

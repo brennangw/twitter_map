@@ -25,7 +25,9 @@ def getTweets():
         "query": {
             "bool": {
                 "must": {
-                    "match_all": {}
+                    "match": {
+                        "text" : "soccer football basketball"
+                    }
                 },
             }
         }
@@ -62,7 +64,9 @@ def searchTweetsByGeoLocation():
         "query": {
             "bool": {
                 "must": {
-                    "match_all": {}
+                    "match": {
+                        "text" : "soccer football basketball"
+                    }
                 },
                 "filter": {
                     "geo_distance": {
