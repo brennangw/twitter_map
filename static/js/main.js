@@ -97,8 +97,6 @@ $(document).ready(function() {
                 return accumulater;
             }, []);
         distance = filters.shift();
-        console.log(distance);
-        console.log(filters);
         tweetsDisplay();
     });
     init();

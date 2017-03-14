@@ -3,7 +3,7 @@ from flask import Flask
 import certifi
 from elasticsearch import Elasticsearch
 import secretsAndSettings as sas
-
+index = "geo-tweets"
 #elasticsearch set up
 elasticsearch = Elasticsearch(sas.elasticSearch['uri'],
                               port=sas.elasticSearch['port'],
@@ -21,12 +21,14 @@ def hello_world():
 
 @application.route('/tweets')
 def getTweets():
-    res = elasticsearch.search(index="tweets", size=1000, body={"query": {"match_all": {}}})
+    res = elasticsearch.search(index=index, doc_type="tweet", size=1000, body={"query": {"match_all": {}}})
+    print res
     def getSource(result): return result['_source']
     resSources = list(map(getSource, res['hits']['hits']))
-    print(jsonify(resSources))
+    # print(jsonify(resSources))
     simplifiedTweets = []
     for tweet in resSources:
+        print tweet
         try:
             #are the bounding_boxes always squares? find out may need to make this more robust
             coordinates = tweet['quoted_status']['place']['bounding_box']['coordinates'][0]
@@ -79,37 +81,49 @@ def searchTweetsByGeoLocation():
     lat = request.form["lat"]
     long = request.form["long"]
     distance = request.form["distance"]
+
     print lat
     print long
     print distance
+
     tweets = []
-    esBody = {
+
+    query = {
         "query": {
-            "filtered": {
-                "query": {
+            "bool": {
+                "must": {
                     "match_all": {}
                 },
                 "filter": {
                     "geo_distance": {
                         "distance": distance + "km",
-                        "Addresses.GeoLocation": {
+                        "location": {
                             "lat": lat,
                             "lon": long
                         }
                     }
                 }
             }
-        },
-        "size": 50
+        }
     }
-    print esBody
-    # res = elasticsearch.search(index="tweets", size=1000, body=esBody)
-    # print res
-    return jsonify(tweets)
+    res = elasticsearch.search(index=index, doc_type="tweet" , size=1000, body=query)
+    def getSource(result): return result['_source']
+    resSources = list(map(getSource, res['hits']['hits']))
+    simplifiedTweets = []
+
+    print resSources
+    for tweet in resSources:
+        simplifiedTweet = {
+            'coordinates': tweet["location"],
+            'text': tweet['quoted_status']['text']
+        }
+        simplifiedTweets.append(simplifiedTweet)
+    print("returning " + str(len(simplifiedTweets)) + " tweets.")
+    return jsonify(simplifiedTweets)
 
 @application.route('/unformattedTweets')
 def getAllTweetsUnformatted():
-    res = elasticsearch.search(index="tweets", size=20, body={"query": {"match_all": {}}})
+    res = elasticsearch.search(index=index, size=20, body={"query": {"match_all": {}}})
     def getSource(result): return result['_source']
     resSources = list(map(getSource, res['hits']['hits']))
     print("returning " + str(len(resSources)) + " tweets.")
