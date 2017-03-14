@@ -19,8 +19,8 @@ elasticsearch = Elasticsearch(sas.elasticSearch['uri'],
 
 #tracked workds
 wordsToTrack = ['Baseball', 'Football', 'Darts', 'Soccer', 'Basketball']
-#def lowerCase(word): return str(word).lower()
-#wordsToTrack.extend(map(lowerCase, wordsToTrack))
+def lowerCase(word): return str(word).lower()
+wordsToTrack.extend(map(lowerCase, wordsToTrack))
 
 geoTweetIndexName = "geo-tweets"
 
