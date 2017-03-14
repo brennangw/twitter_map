@@ -58,7 +58,7 @@ def searchTweetsByGeoLocation():
     lon = request.form["lng"]
     distance = request.form["distance"]
 
-    print distance
+    print(distance)
 
     query = {
         "query": {
