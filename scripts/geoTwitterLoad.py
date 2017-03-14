@@ -68,21 +68,27 @@ def getGeoCode(tweet):
         return coordinatesDict
 
 
+myStream = None
+count = 0
 
 class ElasticSearchFeederStreamListener(tweepy.StreamListener):
+    count = 0
     def on_data(self, tweet_data):
-        # print "."
         try:
             tweet = json.loads(tweet_data)
-            # print json.dumps(tweet, sort_keys=True, indent=4, separators=(',', ': '))
             tweet["location"] = getGeoCode(tweet)
-            # if 'coordinates' in decoded and decoded['coordinates'] is not None:
-            print tweet
             print elasticsearch.index(index=geoTweetIndexName, doc_type="tweet", body=tweet)
-            # print elasticsearch.search(index=geoTweetIndexName, doc_type="tweet", size=1000, body={"query": {"match_all": {}}})
+            ElasticSearchFeederStreamListener.count += 1
+            # if (ElasticSearchFeederStreamListener.count > 100):
+            #     myStream.disconnect()
+
         except:
             pass
 
 elasticSearchFeederStreamListenerInstance = ElasticSearchFeederStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=elasticSearchFeederStreamListenerInstance)
-myStream.filter(track=wordsToTrack)
+while (True):
+    try:
+        myStream.filter(track=wordsToTrack)
+    except:
+        continue
