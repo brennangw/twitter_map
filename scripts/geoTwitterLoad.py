@@ -24,11 +24,12 @@ wordsToTrack.extend(map(lowerCase, wordsToTrack))
 
 geoTweetIndexName = "geo-tweets"
 
-elasticsearch.indices.delete(index=geoTweetIndexName)
-if not elasticsearch.indices.exists(geoTweetIndexName):
-    elasticsearch.indices.create(index=geoTweetIndexName,
-                                       ignore=400,
-                                       body=gts.geoTweetsSettings)
+
+if  elasticsearch.indices.exists(geoTweetIndexName):
+    elasticsearch.indices.delete(index=geoTweetIndexName)
+elasticsearch.indices.create(index=geoTweetIndexName,
+                                    ignore=400,
+                                    body=gts.geoTweetsSettings)
 
 def getGeoCode(tweet):
     try:
