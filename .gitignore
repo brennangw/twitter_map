@@ -1,6 +1,7 @@
 .idea
 venv
 secretsAndSettings.py
+*.pyc
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
