@@ -5,13 +5,15 @@ var distance = 5000;
 var map = null;
 class GeoTweet {
     constructor(data) {
+        this.user = data.user;
         this.text = data.text;
         this.coordinates = {"lat": Number(data.coordinates["lat"]),
             "lng": Number(data.coordinates["long"])};
     }
 
     get formattedContent() {
-        var fc = "<div><p>"+this.text+"</p></div>";
+        var fc = "<div><p>"+this.text+
+            "</p><h5>"+this.user+"</h5></div>";
         return fc;
     }
 
@@ -73,6 +75,7 @@ function initGoogleMapDisplay() {
                  geoTweets = tweetData.map(function(tweetData) {
                     return new GeoTweet(tweetData)
                 });
+                getFilters($('#filterForm').serializeArray());
                 tweetsDisplay(false);
             }
         });
@@ -105,7 +108,6 @@ function getFilters(serializedArray) {
 $(document).ready(function() {
     $('#showAll').click(function (e) {
         e.preventDefault();
-        console.log("show all");
         getFilters($('#filterForm').serializeArray());
         getTweets(false);
     });

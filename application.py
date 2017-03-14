@@ -14,6 +14,36 @@ elasticsearch = Elasticsearch(sas.elasticSearch['uri'],
 
 application = Flask(__name__)
 
+def getSimplifiedTweets(query):
+    res = elasticsearch.search(index=index, doc_type="tweet", size=1000, body=query)
+    def getSource(result): return result['_source']
+    resSources = list(map(getSource, res['hits']['hits']))
+    simplifiedTweets = []
+    username = None
+
+
+    for tweet in resSources:
+        if (tweet['user']):
+            if (tweet['user']['name']):
+                username = tweet['user']['name']
+            elif (tweet['user']['screen_name']):
+                username = tweet['user']['screen_name']
+
+        simplifiedTweet = {
+            'coordinates': {
+                'lat': tweet['location']['lat'],
+                'long' : tweet['location']['lon']
+            },
+            'text': tweet['text'],
+        }
+        if (username):
+            simplifiedTweet['user'] = username
+        else:
+            simplifiedTweet['user'] = "Unspecified User"
+        simplifiedTweets.append(simplifiedTweet)
+    return simplifiedTweets
+
+
 @application.route('/')
 def hello_world():
     #return send_from_directory('html', 'index.html') why doesnt this work??
@@ -32,33 +62,11 @@ def getTweets():
             }
         }
     }
-    res = elasticsearch.search(index=index, doc_type="tweet", size=1000, body=query)
-    # print res
-    def getSource(result): return result['_source']
-    resSources = list(map(getSource, res['hits']['hits']))
-    simplifiedTweets = []
-    for tweet in resSources:
-        simplifiedTweet = {
-            'coordinates': {
-                'lat': tweet['location']['lat'],
-                'long' : tweet['location']['lon']
-            },
-            'text': tweet['text']
-        }
-
-        simplifiedTweets.append(simplifiedTweet)
-
-    print("returning " + str(len(simplifiedTweets)) + " tweets.")
+    simplifiedTweets = getSimplifiedTweets(query)
     return jsonify(simplifiedTweets)
 
 @application.route('/geoSearch', methods=['POST'])
 def searchTweetsByGeoLocation():
-
-    lat = request.form["lat"]
-    lon = request.form["lng"]
-    distance = request.form["distance"]
-
-    print(distance)
 
     query = {
         "query": {
@@ -70,32 +78,17 @@ def searchTweetsByGeoLocation():
                 },
                 "filter": {
                     "geo_distance": {
-                        "distance": distance + "km",
+                        "distance": request.form["distance"] + "km",
                         "location": {
-                            "lat": lat,
-                            "lon": lon
+                            "lat": request.form["lat"],
+                            "lon": request.form["lng"]
                         }
                     }
                 }
             }
         }
     }
-    res = elasticsearch.search(index=index, doc_type="tweet", size=1000, body=query)
-    # print res
-    def getSource(result): return result['_source']
-    resSources = list(map(getSource, res['hits']['hits']))
-    simplifiedTweets = []
-    for tweet in resSources:
-        simplifiedTweet = {
-            'coordinates': {
-                'lat': tweet['location']['lat'],
-                'long' : tweet['location']['lon']
-            },
-            'text': tweet['text']
-        }
-
-        simplifiedTweets.append(simplifiedTweet)
-
+    simplifiedTweets = getSimplifiedTweets(query)
     print("returning " + str(len(simplifiedTweets)) + " tweets.")
     return jsonify(simplifiedTweets)
 
