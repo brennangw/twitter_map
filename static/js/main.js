@@ -1,27 +1,34 @@
 var geoTweets = [];
 var markers = [];
 var filters = ["soccer", "football", "basketball"];
-var distance = 10;
+var distance = 5000;
 var map = null;
 class GeoTweet {
     constructor(data) {
+        this.user = data.user;
         this.text = data.text;
-        this.coordinates = {"lat": Number(data.coordinates["lat"]), "lng": Number(data.coordinates["long"])};
+        this.coordinates = {"lat": Number(data.coordinates["lat"]),
+            "lng": Number(data.coordinates["long"])};
     }
 
     get formattedContent() {
-        var fc = "<div><p>"+this.text+"</p></div>";
+        var fc = "<div><p>"+this.text+
+            "</p><h5>"+this.user+"</h5></div>";
         return fc;
     }
 
 }
 
-function tweetsDisplay() {
+function tweetsDisplay(useFilters) {
+
     for (var i = 0; i < markers.length; i++) {
         markers[i].setMap(null);
     }
 
     geoTweets.filter(function (geoTweet) {
+        if (!useFilters) {
+            return true;
+        }
         for (let filter of filters) {
             if (geoTweet.text.toLowerCase().indexOf(filter) > 0) {
                 return true;
@@ -62,17 +69,17 @@ function initGoogleMapDisplay() {
                 "distance" : distance
             },
             success: function(tweetData) {
-                console.log(tweetData);
+                 geoTweets = tweetData.map(function(tweetData) {
+                    return new GeoTweet(tweetData)
+                });
+                getFilters($('#filterForm').serializeArray());
+                tweetsDisplay(false);
             }
         });
     });
 }
 
-
-// This example displays a marker at the center of Australia.
-// When the user clicks the marker, an info window opens.
-
-function init() {
+function getTweets(useFilters) {
     return $.ajax({
         type: "GET",
         url: "/tweets",
@@ -80,25 +87,10 @@ function init() {
             geoTweets = tweetData.map(function(tweetData) {
                 return new GeoTweet(tweetData)
             });
-            initGoogleMapDisplay();
-            tweetsDisplay();
+            tweetsDisplay(useFilters);
         }
     })
 }
-
-function showFiltered() {
-        return $.ajax({
-        type: "GET",
-        url: "/tweets",
-        success: function(tweetData) {
-            geoTweets = tweetData.map(function(tweetData) {
-                return new GeoTweet(tweetData)
-            });
-            tweetsDisplay();
-        }
-    })
-}
-
 
 function getFilters(serializedArray) {
     filters =
@@ -111,14 +103,22 @@ function getFilters(serializedArray) {
 }
 
 $(document).ready(function() {
-    $('#showFilteredButton').click(function (e) {
-       console.log("click!");
+    $('#showAll').click(function (e) {
+        e.preventDefault();
+        getFilters($('#filterForm').serializeArray());
+        getTweets(false);
     });
-
     $('#filterForm').submit(function (e) {
         e.preventDefault();
-        getFilters($('#filterForm').serializeArray())
-        tweetsDisplay();
+        getFilters($('#filterForm').serializeArray());
+        getTweets(true);
     });
-    init();
+    $('#showFilteredButton').click(function (e) {
+        getFilters($('#filterForm').serializeArray());
+        tweetsDisplay(true);
+    });
+    initGoogleMapDisplay();
+    getFilters($('#filterForm').serializeArray());
+    getTweets(true);
+    console.log("done with init");
 });
