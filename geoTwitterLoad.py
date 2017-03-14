@@ -3,6 +3,7 @@ from elasticsearch import Elasticsearch
 from datetime import datetime
 import secretsAndSettings as sas
 import geoTwitterSettings as gts
+from random import randint
 
 #Sign into Twitter
 auth = tweepy.OAuthHandler(sas.twitterKeys['consumer_key'],
@@ -54,23 +55,31 @@ def getGeoCode(tweet):
         return coordinatesDict
     except:
         pass
-    coordinatesArray = tweet["coordinates"]["coordinates"]
-    coordinatesDict = {}
-    coordinatesDict['lat'] = float(coordinatesArray[0])
-    coordinatesDict['lon'] = float(coordinatesArray[1])
-    return coordinatesDict
+    try:
+        coordinatesArray = tweet["coordinates"]["coordinates"]
+        coordinatesDict = {}
+        coordinatesDict['lat'] = float(coordinatesArray[0])
+        coordinatesDict['lon'] = float(coordinatesArray[1])
+        return coordinatesDict
+    except:
+        coordinatesDict = {}
+        coordinatesDict['lat'] = float(randint(-90, 90));
+        coordinatesDict['lon'] = float(randint(-180, 180));
+        return coordinatesDict
 
 
 
 class ElasticSearchFeederStreamListener(tweepy.StreamListener):
     def on_data(self, tweet_data):
-        print "."
+        # print "."
         try:
             tweet = json.loads(tweet_data)
             # print json.dumps(tweet, sort_keys=True, indent=4, separators=(',', ': '))
             tweet["location"] = getGeoCode(tweet)
             # if 'coordinates' in decoded and decoded['coordinates'] is not None:
+            print tweet
             print elasticsearch.index(index=geoTweetIndexName, doc_type="tweet", body=tweet)
+            # print elasticsearch.search(index=geoTweetIndexName, doc_type="tweet", size=1000, body={"query": {"match_all": {}}})
         except:
             pass
 
