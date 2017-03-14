@@ -15,7 +15,7 @@ elasticsearch = Elasticsearch(sas.elasticSearch['uri'],
 application = Flask(__name__)
 
 def getSimplifiedTweets(query):
-    res = elasticsearch.search(index=index, doc_type="tweet", size=1000, body=query)
+    res = elasticsearch.search(index=index, doc_type="tweet", size=40, body=query)
     def getSource(result): return result['_source']
     resSources = list(map(getSource, res['hits']['hits']))
     simplifiedTweets = []
@@ -52,6 +52,7 @@ def hello_world():
 @application.route('/tweets')
 def getTweets():
     query = {
+        "sort": {"id": {"order": "desc"}},
         "query": {
             "bool": {
                 "must": {
@@ -69,6 +70,7 @@ def getTweets():
 def searchTweetsByGeoLocation():
 
     query = {
+        "sort": {"id": {"order": "desc"}},
         "query": {
             "bool": {
                 "must": {

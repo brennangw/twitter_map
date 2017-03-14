@@ -3,6 +3,8 @@ var markers = [];
 var filters = ["soccer", "football", "basketball"];
 var distance = 5000;
 var map = null;
+var streaming = false;
+var intervalId = null;
 class GeoTweet {
     constructor(data) {
         this.user = data.user;
@@ -103,6 +105,23 @@ function getFilters(serializedArray) {
 }
 
 $(document).ready(function() {
+    $('#streamButton').click(function (e) {
+        if (streaming) { //stopping
+             clearInterval(intervalId);
+            intervalId = null;
+
+            $('#streamButton').html("Start Stream");
+
+        } else { //starting
+            function intervalFunc() {
+                getFilters($('#filterForm').serializeArray());
+                getTweets(true);
+            }
+            intervalId = setInterval(intervalFunc,1000);
+            $('#streamButton').html("Stop Stream");
+        }
+        streaming = !streaming;
+    });
     $('#showAll').click(function (e) {
         e.preventDefault();
         getFilters($('#filterForm').serializeArray());
