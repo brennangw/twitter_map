@@ -19,8 +19,8 @@ elasticsearch = Elasticsearch(sas.elasticSearch['uri'],
 
 #tracked workds
 wordsToTrack = ['Baseball', 'Football', 'Darts', 'Soccer', 'Basketball']
-def lowerCase(word): return str(word).lower()
-wordsToTrack.extend(map(lowerCase, wordsToTrack))
+#def lowerCase(word): return str(word).lower()
+#wordsToTrack.extend(map(lowerCase, wordsToTrack))
 
 geoTweetIndexName = "geo-tweets"
 
@@ -78,7 +78,7 @@ class ElasticSearchFeederStreamListener(tweepy.StreamListener):
         try:
             tweet = json.loads(tweet_data)
             tweet["location"] = getGeoCode(tweet)
-            print elasticsearch.index(index=geoTweetIndexName, doc_type="tweet", body=tweet)
+            print (elasticsearch.index(index=geoTweetIndexName, doc_type="tweet", body=tweet))
             ElasticSearchFeederStreamListener.count += 1
             # if (ElasticSearchFeederStreamListener.count > 100):
             #     myStream.disconnect()
