@@ -66,6 +66,26 @@ def getTweets():
     simplifiedTweets = getSimplifiedTweets(query)
     return jsonify(simplifiedTweets)
 
+@application.route('/streamPoll', methods=['POST'])
+def streamPoll():
+    text = request.form["text"]
+    query = {
+        "sort": {"id": {"order": "desc"}},
+        "query": {
+            "bool": {
+                "must": {
+                    "match": {
+                        "text": text
+                    }
+                },
+            }
+        }
+    }
+    simplifiedTweets = getSimplifiedTweets(query)
+    print("returning " + str(len(simplifiedTweets)) + " tweets.")
+    return jsonify(simplifiedTweets)
+
+
 @application.route('/geoSearch', methods=['POST'])
 def searchTweetsByGeoLocation():
 

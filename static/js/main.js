@@ -81,6 +81,25 @@ function initGoogleMapDisplay() {
     });
 }
 
+
+function streamPoll() {
+    return $.ajax({
+            type: "POST",
+            url: "/streamPoll",
+            data: {
+                "text" : filters.join(" ")
+            },
+            success: function(tweetData) {
+                 geoTweets = tweetData.map(function(tweetData) {
+                    return new GeoTweet(tweetData)
+                });
+                getFilters($('#filterForm').serializeArray());
+                tweetsDisplay(false);
+            }
+        });
+}
+
+
 function getTweets(useFilters) {
     return $.ajax({
         type: "GET",
@@ -113,11 +132,7 @@ $(document).ready(function() {
             $('#streamButton').html("Start Stream");
 
         } else { //starting
-            function intervalFunc() {
-                getFilters($('#filterForm').serializeArray());
-                getTweets(true);
-            }
-            intervalId = setInterval(intervalFunc,1000);
+            intervalId = setInterval(streamPoll,1000);
             $('#streamButton').html("Stop Stream");
         }
         streaming = !streaming;
